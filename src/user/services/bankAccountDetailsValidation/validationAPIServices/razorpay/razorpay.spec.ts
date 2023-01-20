@@ -1,6 +1,5 @@
 import { Razorpay } from './razorpay';
 import { APIService } from '../../../../utilities/apiCall.service';
-
 describe('Testing RazorPay API calls', () => {
   const razorPayAPI = new Razorpay(new APIService());
   let newAccount;

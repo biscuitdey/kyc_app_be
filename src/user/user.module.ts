@@ -14,11 +14,13 @@ import { UpdateUserStatusCommandHandler } from './capabilities/updateUserStatus/
 import { PanValidationModule } from './services/panDetailsValidation/panValidation.module';
 import { ValidateUserBankDetailsCommandHandler } from './capabilities/validateUserBankDetails/validateUserBankDetailsCommand.handler';
 import { ValidateUserPanDetailsCommandHandler } from './capabilities/validateUserPanDetails/validateUserPanDetailsCommand.handler';
+import { UpdateUserBankValidationCommandHandler } from './capabilities/updateUserBankValidation/updateUserBankValidationCommand.handler';
 
 export const CommandHandler = [
   CreateUserCommandHandler,
   UpdateUserStatusCommandHandler,
   ValidateUserBankDetailsCommandHandler,
+  UpdateUserBankValidationCommandHandler,
   ValidateUserPanDetailsCommandHandler,
   DeleteUserCommandHandler,
 ];

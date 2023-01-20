@@ -1,32 +1,37 @@
 import { APIService } from '../../../../utilities/apiCall.service';
 import 'dotenv/config';
+import axios from 'axios';
 
 export class Razorpay {
-  clientCredentials = {};
+  authToken: string;
   constructor(private readonly apiAgent: APIService) {
-    this.clientCredentials = {
-      id: process.env.RAZORPAY_CLIENT_ID,
-      secret: process.env.RAZORPAY_CLIENT_SECRET,
-    };
+    this.authToken = Buffer.from(
+      `${process.env.RAZORPAY_CLIENT_ID}:${process.env.RAZORPAY_CLIENT_SECRET}`,
+    ).toString('base64');
   }
 
   async createAccount(name: string) {
     try {
       const url = 'https://api.razorpay.com/v1/contacts';
-      const requestParams = JSON.stringify({
+      const data = JSON.stringify({
         name: name,
       });
-      const account = await this.apiAgent.post(
-        url,
-        'Basic',
-        requestParams,
-        null,
-        this.clientCredentials,
-      );
 
+      const params = {
+        method: 'POST',
+        url: url,
+        data: data,
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Basic ${this.authToken}`,
+        },
+      };
+
+      const response = await axios(params);
+      const account = response.data;
       return account;
     } catch (e) {
-      console.log(e.response.data.error);
+      console.log(e);
     }
   }
 
@@ -37,7 +42,8 @@ export class Razorpay {
   ) {
     try {
       const url = 'https://api.razorpay.com/v1/fund_accounts';
-      const requestParams = JSON.stringify({
+
+      const data = JSON.stringify({
         contact_id: account.id,
         account_type: 'bank_account',
         bank_account: {
@@ -46,13 +52,19 @@ export class Razorpay {
           account_number: bankAccountNumber,
         },
       });
-      const fund = await this.apiAgent.post(
-        url,
-        'Basic',
-        requestParams,
-        null,
-        this.clientCredentials,
-      );
+
+      const params = {
+        method: 'POST',
+        url: url,
+        data: data,
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Basic ${this.authToken}`,
+        },
+      };
+
+      const response = await axios(params);
+      const fund = response.data;
       return fund;
     } catch (e) {
       console.log(e.response.data.error);
@@ -62,21 +74,26 @@ export class Razorpay {
   async validateAccount(fundId: string) {
     try {
       const url = 'https://api.razorpay.com/v1/fund_accounts/validations';
-      const requestParams = JSON.stringify({
+      const data = JSON.stringify({
         account_number: '2323230062425530',
         fund_account: {
           id: fundId,
         },
         amount: 100,
       });
-      const response = await this.apiAgent.post(
-        url,
-        'Basic',
-        requestParams,
-        null,
-        this.clientCredentials,
-      );
-      return response;
+      const params = {
+        method: 'POST',
+        url: url,
+        data: data,
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Basic ${this.authToken}`,
+        },
+      };
+
+      const response = await axios(params);
+      const validated = response.data;
+      return validated;
     } catch (e) {
       console.log(e.response.data.error);
     }

@@ -8,9 +8,7 @@ import { USER_NOT_FOUND } from '../api/err.messages';
 export class UserStorageAgent {
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
-  ) {
-    console.log(this.userRepository.metadata);
-  }
+  ) {}
 
   async storeUser(user: User) {
     return await this.userRepository.save(user);

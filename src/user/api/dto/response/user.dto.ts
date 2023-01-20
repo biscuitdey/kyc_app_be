@@ -8,5 +8,11 @@ export class UserDto {
   name: string;
 
   @AutoMap()
-  status: boolean;
+  validated: boolean;
+
+  @AutoMap()
+  panStatus: string;
+
+  @AutoMap()
+  bankStatus: string;
 }

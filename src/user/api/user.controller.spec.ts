@@ -17,6 +17,9 @@ import { BankAccountValidationService } from '../services/bankAccountDetailsVali
 import { PanValidationService } from '../services/panDetailsValidation/panValidation.service';
 import { Razorpay } from '../services/bankAccountDetailsValidation/validationAPIServices/razorpay/razorpay';
 import { EKO } from '../services/panDetailsValidation/validationAPIServices/eko/eko';
+import { MockUserStorageAgent } from '../agent/mockUserStorage.agent';
+import { ValidateUserPanDetailsDto } from './dto/request/validateUserPANDetails.dto';
+import { UpdateUserBankValidationCommandHandler } from '../capabilities/updateUserBankValidation/updateUserBankValidationCommand.handler';
 
 describe('UserController', () => {
   let controller: UserController;
@@ -33,6 +36,7 @@ describe('UserController', () => {
         GetAllUsersQueryHandler,
         GetUserByIdQueryHandler,
         ValidateUserBankDetailsCommandHandler,
+        UpdateUserBankValidationCommandHandler,
         ValidateUserPanDetailsCommandHandler,
         UserAgent,
         UserStorageAgent,
@@ -50,7 +54,10 @@ describe('UserController', () => {
           },
         },
       ],
-    }).compile();
+    })
+      .overrideProvider(UserStorageAgent)
+      .useValue(new MockUserStorageAgent())
+      .compile();
 
     controller = app.get<UserController>(UserController);
 
@@ -62,7 +69,7 @@ describe('UserController', () => {
   });
 
   describe('CreateUser', () => {
-    it('Should create an user and store in db', async () => {
+    it('should create an user and store in db', async () => {
       const requestDto = { name: 'Biswashree Dey' } as CreateUserDto;
 
       const response = await controller.createUser(requestDto);
@@ -71,64 +78,86 @@ describe('UserController', () => {
     });
   });
 
-  // describe('GetAllUsers', () => {
-  //   it('Should get all the users', async () => {
-  //     //Arrange
-  //     const createUser1Dto = { name: 'Danny Smith' } as CreateUserDto;
-  //     const createUser2Dto = { name: 'Jack Smith' } as CreateUserDto;
+  describe('GetAllUsers', () => {
+    it('should get all the users', async () => {
+      //Arrange
+      const createUser1Dto = { name: 'Danny Smith' } as CreateUserDto;
+      const createUser2Dto = { name: 'Jack Smith' } as CreateUserDto;
 
-  //     await controller.createUser(createUser1Dto);
-  //     await controller.createUser(createUser2Dto);
+      await controller.createUser(createUser1Dto);
+      await controller.createUser(createUser2Dto);
 
-  //     //Act
-  //     const response = await controller.getUsers();
+      //Act
+      const response = await controller.getUsers();
 
-  //     //Assert
-  //     expect(response[0].name).toEqual('Danny Smith');
-  //     expect(response[1].name).toEqual('Jack Smith');
-  //   });
-  // });
+      //Assert
+      expect(response[0].name).toEqual('Danny Smith');
+      expect(response[1].name).toEqual('Jack Smith');
+    });
+  });
 
-  // describe('GetUserById', () => {
+  describe('GetUserById', () => {
+    it('should get user by their id', async () => {
+      //Arrange
+      const createUserDto = { name: 'David So' } as CreateUserDto;
+
+      const user = await controller.createUser(createUserDto);
+
+      //Act
+      const response = await controller.getUserById(user.id);
+
+      //Assert
+      expect(response.id).toEqual(user.id);
+      expect(response.name).toEqual('David So');
+    });
+  });
+
+  describe('ValidateUserPanDetails', () => {
+    it('should validate pan card of user and update their pan validation status', async () => {
+      //Arrange
+      const createUserDto = { name: 'Shovona Dey' } as CreateUserDto;
+
+      const user = await controller.createUser(createUserDto);
+
+      const validatePanDto = {
+        id: user.id,
+        panNumber: 'ABEPD3036E',
+      } as ValidateUserPanDetailsDto;
+
+      //Act
+      const response = await controller.validatePanDetails(validatePanDto);
+
+      //Assert
+      expect(response.name).toEqual('Shovona Dey');
+      expect(response.panStatus).toEqual('PAN verification successful');
+    });
+  });
+
+  // describe('UpdateUserStatus', () => {
   //   it('Should create an user and store in db', async () => {
   //     //Arrange
-  //     const createUserDto = { name: 'David So' } as CreateUserDto;
-
+  //     const createUserDto = { name: 'Shovona Dey' } as CreateUserDto;
   //     const user = await controller.createUser(createUserDto);
+  //     const updateUserDto = {} as UpdateUserDto;
 
   //     //Act
-  //     const response = await controller.getUserById(user.id);
+  //     const response = await controller.updateUserStatus(
+  //       user.id,
+  //       updateUserDto,
+  //     );
 
-  //     //Assert
-  //     expect(response.id).toEqual(user.id);
-  //     expect(response.name).toEqual('David So');
+  //     expect(response.name).toEqual('Shovona Dey');
+  //     expect(response.status).toEqual('Verified');
   //   });
   // });
 
-  // // describe('UpdateUserStatus', () => {
-  // //   it('Should create an user and store in db', async () => {
-  // //     //Arrange
-  // //     const createUserDto = { name: 'Shovona Dey' } as CreateUserDto;
-  // //     const user = await controller.createUser(createUserDto);
-  // //     const updateUserDto = {} as UpdateUserDto;
+  describe('DeleteUser', () => {
+    it('Should create an user and store in db', async () => {
+      const requestDto = { name: 'Biswashree Dey' } as CreateUserDto;
 
-  // //     //Act
-  // //     const response = await controller.updateUserStatus(
-  // //       user.id,
-  // //       updateUserDto,
-  // //     );
+      const response = await controller.createUser(requestDto);
 
-  // //     expect(response.name).toEqual('Shovona Dey');
-  // //     expect(response.status).toEqual('Verified');
-  // //   });
-  // // });
-  // describe('DeleteUser', () => {
-  //   it('Should create an user and store in db', async () => {
-  //     const requestDto = { name: 'Biswashree Dey' } as CreateUserDto;
-
-  //     const response = await controller.createUser(requestDto);
-
-  //     expect(response.name).toEqual('Biswashree Dey');
-  //   });
-  // });
+      expect(response.name).toEqual('Biswashree Dey');
+    });
+  });
 });

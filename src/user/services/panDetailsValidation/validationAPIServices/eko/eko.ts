@@ -40,6 +40,7 @@ export class EKO {
     };
 
     const response = await axios.post(url, params, { headers: headers });
+
     return new PanValidationStatus(
       response.data.message,
       response.data.data['pan_number'],
