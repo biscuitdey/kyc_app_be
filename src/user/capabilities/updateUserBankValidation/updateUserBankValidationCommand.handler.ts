@@ -1,6 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { UserAgent } from 'src/user/agent/user.agent';
-import { UserStorageAgent } from 'src/user/agent/userStorage.agent';
+import { UserAgent } from '../../agent/user.agent';
+import { UserStorageAgent } from '../../agent/userStorage.agent';
 import { UpdateUserBankValidationCommand } from './updateUserBankValidation.command';
 
 @CommandHandler(UpdateUserBankValidationCommand)

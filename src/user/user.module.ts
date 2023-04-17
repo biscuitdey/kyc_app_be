@@ -15,6 +15,7 @@ import { PanValidationModule } from './services/panDetailsValidation/panValidati
 import { ValidateUserBankDetailsCommandHandler } from './capabilities/validateUserBankDetails/validateUserBankDetailsCommand.handler';
 import { ValidateUserPanDetailsCommandHandler } from './capabilities/validateUserPanDetails/validateUserPanDetailsCommand.handler';
 import { UpdateUserBankValidationCommandHandler } from './capabilities/updateUserBankValidation/updateUserBankValidationCommand.handler';
+import { DidModule } from './services/decentralizedIdentity/did.module';
 
 export const CommandHandler = [
   CreateUserCommandHandler,
@@ -36,6 +37,9 @@ export const QueryHandler = [GetAllUsersQueryHandler, GetUserByIdQueryHandler];
     }),
     PanValidationModule.register({
       folder: './services/panDetailsValidation/validationAPIServices',
+    }),
+    DidModule.register({
+      folder: './services/decentralizedIdentity/didServices',
     }),
   ],
   controllers: [UserController],
