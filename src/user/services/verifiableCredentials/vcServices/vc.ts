@@ -1,66 +1,54 @@
-import { EcdsaSecp256k1Signature2019 } from '@bloomprotocol/ecdsa-secp256k1-signature-2019';
-import { EthrDID, KeyPair } from 'ethr-did';
-
-import { EthrDid } from '../../decentralizedIdentity/didServices/ethrDid';
-import { didDocumentLoader } from './documentLoader';
-//import { Secp256k1KeyPair } from 'secp256k1-key-pair';
-import {
-  Secp256k1KeyPair,
-  EcdsaSecp256k1VerificationKey2019,
-} from '@transmute/secp256k1-key-pair';
-
-import { EcdsaSecp256k1VerificationKey2019 } from '@bloomprotocol/ecdsa-secp256k1-verification-key-2019';
-import {
-  JsonWebKey,
-  JsonWebKey2020,
-  JsonWebSignature,
-} from '@transmute/json-web-signature';
-import { DIDResolutionResult } from 'did-resolver';
-import { Signer } from 'did-jwt';
+import { KeyPair } from 'ethr-did';
+import { DocumentLoader } from './utils/documentLoader/documentLoader';
+import { Secp256k1KeyPair } from '@transmute/secp256k1-key-pair';
+import { DIDDocument } from 'did-resolver';
+import bs58 from 'bs58';
+import { EcdsaSecp256k1Signature2019 } from './utils/EcdsaSecp256k1Signature2019';
+import { create } from './utils/vc/vc';
 
 export class VerifiableCredential {
-  private credential = {
-    '@context': [
-      'https://www.w3.org/2018/credentials/v1',
-      'https://w3id.org/security/suites/jws-2020/v1',
-    ],
-    id: 'http://example.edu/credentials/3732',
-    type: ['VerifiableCredential'],
-    issuer: {
-      id: 'id',
-    },
-    issuanceDate: '2010-01-01T19:23:24Z',
-    credentialSubject: {
-      id: 'did:example:ebfeb1f712ebc6f1c276e12ec21',
-    },
-  };
-
   async generateKey(
-    issuerId: EthrDID,
-    issuerKey: string,
+    issuerKeyPair: KeyPair,
+    issuerDidDocument: DIDDocument,
   ): Promise<Secp256k1KeyPair> {
-    const keypair = await Secp256k1KeyPair.generate({
-      secureRandom: () => {
-        return Buffer.from(issuerKey, 'hex');
-      },
+    const privateKeyBase58 = bs58.encode(
+      Buffer.from(issuerKeyPair.privateKey.split('0x')[1], 'hex'),
+    );
+
+    const publicKeyBase58 = bs58.encode(
+      Buffer.from(issuerKeyPair.publicKey.split('0x')[1], 'hex'),
+    );
+
+    const keypair = await Secp256k1KeyPair.from({
+      id: issuerDidDocument.verificationMethod[1].id,
+      type: 'EcdsaSecp256k1VerificationKey2019',
+      controller: issuerDidDocument.verificationMethod[1].controller,
+      privateKeyBase58: privateKeyBase58,
+      publicKeyBase58: publicKeyBase58,
     });
-    const fingerprint = await keypair.fingerprint();
-    keypair.id = `${issuerId.did}#${fingerprint}`;
-    keypair.controller = issuerId.did;
 
     return keypair;
   }
 
-  async generateSuite(issuerKeyPair: Secp256k1KeyPair) {
-    const jwk = await issuerKeyPair.export({
-      type: 'JsonWebKey2020',
-    });
-
-    JsonWebKey.from(jwk);
-
+  async generateSuite(
+    issuerKeyPair: Secp256k1KeyPair,
+  ): Promise<EcdsaSecp256k1Signature2019> {
     const suite = new EcdsaSecp256k1Signature2019({
-      key: keypair,
+      key: issuerKeyPair,
     });
+
     return suite;
+  }
+
+  async generateVC(credential: any, suite: EcdsaSecp256k1Signature2019) {
+    const documentLoader = new DocumentLoader().loader;
+    const result = await create({
+      credential,
+      format: ['vc'],
+      documentLoader: documentLoader,
+      suite: suite,
+    });
+
+    return result;
   }
 }

@@ -6,23 +6,33 @@ describe('Call Verifable Credential API', () => {
   it('should create did', async () => {
     const didService = new EthrDid();
     const vcService = new VerifiableCredential();
-
     //Issuer DID
     const issuerKeypair = await didService.createKeypair();
-    const issuerDid = await didService.createDid(issuerKeypair);
+    const issuer = await didService.createDid(issuerKeypair);
     const didResolver = await didService.getDidResolver();
-    const didDocument = (await didResolver.resolve(issuerDid.did)).didDocument;
-
-    //VC Keypair
+    const issuerDidDocument = (await didResolver.resolve(issuer.did))
+      .didDocument;
+    // // //VC Keypair
     const keypair = await vcService.generateKey(
-      issuerDid,
-      issuerKeypair.privateKey.split('0x')[1],
+      issuerKeypair,
+      issuerDidDocument,
     );
-
     //VC Suite
     const suite = await vcService.generateSuite(keypair);
+    // //Credential sample
+    const credential = {
+      '@context': ['https://www.w3.org/2018/credentials/v1'],
+      id: 'http://example.edu/credentials/3732',
+      type: ['VerifiableCredential'],
+      issuer: issuer.did,
+      issuanceDate: '2010-01-01T19:23:24Z',
+      credentialSubject: {
+        id: 'did:example:ebfeb1f712ebc6f1c276e12ec21',
+      },
+    };
+    const vc = await vcService.generateVC(credential, suite);
 
-    //console.log(suite);
+    console.log(vc.items[0]);
 
     expect('subjectDid').toEqual('subjectDid');
   });
