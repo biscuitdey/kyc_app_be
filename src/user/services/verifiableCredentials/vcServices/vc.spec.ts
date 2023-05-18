@@ -3,7 +3,7 @@ import { EthrDid } from '../../decentralizedIdentity/didServices/ethrDid';
 import { VerifiableCredential } from './vc';
 
 describe('Call Verifable Credential API', () => {
-  it('should create did', async () => {
+  it('should create did using local library', async () => {
     const didService = new EthrDid();
     const vcService = new VerifiableCredential();
     //Issuer DID
@@ -31,8 +31,19 @@ describe('Call Verifable Credential API', () => {
       },
     };
     const vc = await vcService.generateVC(credential, suite);
+    console.log(vc);
 
-    console.log(vc.items[0]);
+    expect('subjectDid').toEqual('subjectDid');
+  });
+
+  it('should create did using did-vc-jwt', async () => {
+    const didService = new EthrDid();
+    const vcService = new VerifiableCredential();
+    //Issuer DID
+    const issuerKeypair = await didService.createKeypair();
+    const issuer = await didService.createDid(issuerKeypair);
+    const vc = await vcService.generateUsingJwt(issuer);
+    console.log(vc);
 
     expect('subjectDid').toEqual('subjectDid');
   });

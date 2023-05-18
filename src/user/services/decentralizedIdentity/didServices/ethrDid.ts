@@ -2,6 +2,7 @@ import { InfuraProvider, AlchemyProvider } from '@ethersproject/providers';
 import { EthrDID, KeyPair } from 'ethr-did';
 import { Resolver } from 'did-resolver';
 import { getResolver } from 'ethr-did-resolver';
+import { Issuer } from 'did-jwt-vc';
 
 export class EthrDid {
   private chainNameOrId = 'goerli';
@@ -10,7 +11,7 @@ export class EthrDid {
     return keypair;
   }
 
-  async createDid(keypair: KeyPair): Promise<EthrDID> {
+  async createDid(keypair: KeyPair): Promise<Issuer> {
     const provider = new InfuraProvider('goerli', {
       projectId: process.env.INFURA_PROJECT_ID,
       projectSecret: process.env.INFURA_PROJECT_KEY,
@@ -20,7 +21,7 @@ export class EthrDid {
       ...keypair,
       provider: provider,
       chainNameOrId: this.chainNameOrId,
-    });
+    }) as Issuer;
     return did;
   }
 

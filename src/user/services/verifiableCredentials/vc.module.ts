@@ -1,6 +1,6 @@
-import { DynamicModule, Module } from "@nestjs/common";
-import { VcService } from "./vc.service.js";
-import { VerifiableCredential } from "./vcServices/vc.js";
+import { DynamicModule, Module } from '@nestjs/common';
+import { VcService } from './vc.service.js';
+import { VerifiableCredential } from './vcServices/vc.js';
 
 @Module({})
 export class VcModule {
@@ -8,7 +8,7 @@ export class VcModule {
     return {
       module: VcModule,
       providers: [
-        { provide: "VALIDATION_OPTIONS", useValue: options },
+        { provide: 'VALIDATION_OPTIONS', useValue: options },
         VcService,
         VerifiableCredential,
       ],

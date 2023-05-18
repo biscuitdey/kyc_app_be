@@ -5,7 +5,11 @@ import { DIDDocument } from 'did-resolver';
 import bs58 from 'bs58';
 import { EcdsaSecp256k1Signature2019 } from './utils/EcdsaSecp256k1Signature2019';
 import { create } from './utils/vc/vc';
-
+import {
+  Issuer,
+  JwtCredentialPayload,
+  createVerifiableCredentialJwt,
+} from 'did-jwt-vc';
 export class VerifiableCredential {
   async generateKey(
     issuerKeyPair: KeyPair,
@@ -50,5 +54,24 @@ export class VerifiableCredential {
     });
 
     return result;
+  }
+
+  async generateUsingJwt(issuer: Issuer) {
+    const vcPayload: JwtCredentialPayload = {
+      sub: 'did:ethr:0x435df3eda57154cf8cf7926079881f2912f54db4',
+      vc: {
+        '@context': ['https://www.w3.org/2018/credentials/v1'],
+        type: ['VerifiableCredential'],
+        credentialSubject: {
+          degree: {
+            type: 'BachelorDegree',
+            name: 'Baccalauréat en musiques numériques',
+          },
+        },
+      },
+    };
+
+    const vcJwt = await createVerifiableCredentialJwt(vcPayload, issuer);
+    return vcJwt;
   }
 }
