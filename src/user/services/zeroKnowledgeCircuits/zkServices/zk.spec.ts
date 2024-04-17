@@ -1,6 +1,8 @@
 import { ZeroKnowledge } from './zk';
+import { ZKRecursiveCircuit } from './circuit/zkRecursiveCircuit';
 
 describe('Call ZeroKnowledge API', () => {
+  jest.setTimeout(200000);
   it('should create a zk proof', async () => {
     const zk = new ZeroKnowledge();
     const { proof, publicSignals } = await zk.createProof({
@@ -13,8 +15,15 @@ describe('Call ZeroKnowledge API', () => {
       pi_c: proof.pi_c,
     };
 
+    console.log(witness);
+    console.log(publicSignals[0]);
     const isVerified = await zk.verifyProof(witness, publicSignals);
     globalThis.curve_bn128.terminate();
     expect(isVerified).toEqual(true);
+  });
+
+  it('recursive zk proof', async () => {
+    const zk = new ZKRecursiveCircuit();
+    await zk.createCircuit();
   });
 });
